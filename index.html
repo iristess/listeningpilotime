@@ -196,21 +196,38 @@ function welcome(){
 
 function practice(){
   app.innerHTML="";renderExit();
-  let count=0;
+  let count=0,heard=false;
   const c=el(`<div class="card booth">
-    <span class="eyebrow">תרגול</span>
-    <p>הקוד האישי שלך: <b dir="ltr" style="font-size:1.2rem;letter-spacing:.08em">${S.participant}</b></p>
-    <h2>נסו ללחוץ על הרווח, או על העיגול</h2>
-    <div class="pad" id="pad" role="button" tabindex="-1"><span>לחיצה</span><kbd>רווח</kbd></div>
-    <p class="muted" id="pc">עוד לא נלחץ</p>
-    <p>כשזה עובד, כוונו את עוצמת השמע לרמה נוחה ותתחילו. הסיפור הראשון יתחיל מיד אחרי הלחיצה.</p>
+    <span class="eyebrow">הכנה לפני ההאזנה</span>
+    ${TEST_MODE?`<p class="muted">מצב בדיקה · קוד: <b dir="ltr">${S.participant}</b></p>`:""}
+    <div class="stack" style="align-items:center">
+      <h2>1. כיוון עוצמת השמע</h2>
+      <p>הפעילו את הקטע לדוגמה וכוונו את עוצמת השמע במחשב או באוזניות לרמה נוחה וברורה. אפשר להפעיל כמה פעמים שצריך.</p>
+      <button class="ghost" id="vol">▶ הפעלת קטע לדוגמה</button>
+      <p class="muted" id="volMsg" aria-live="polite"></p>
+    </div>
+    <div class="stack" style="align-items:center">
+      <h2>2. תרגול לחיצה</h2>
+      <p>נסו ללחוץ על מקש הרווח, או על העיגול.</p>
+      <div class="pad" id="pad" role="button" tabindex="-1"><span>לחיצה</span><kbd>רווח</kbd></div>
+      <p class="muted" id="pc">עוד לא נלחץ</p>
+    </div>
+    <p>כשהשמע מכוון והלחיצה עובדת, אפשר להתחיל. הסיפור הראשון יתחיל מיד אחרי הלחיצה על הכפתור.</p>
     <button id="start" disabled>להתחיל את הסיפור הראשון</button>
   </div>`);
   app.append(c);
-  const pad=c.querySelector("#pad"),pc=c.querySelector("#pc"),st=c.querySelector("#start");
-  const hit=()=>{count++;flash(pad);pc.textContent="נקלטו "+count+" לחיצות. מעולה.";st.disabled=false};
+  const pad=c.querySelector("#pad"),pc=c.querySelector("#pc"),st=c.querySelector("#start"),vol=c.querySelector("#vol"),volMsg=c.querySelector("#volMsg");
+  const sample=new Audio("volume.mp3");sample.preload="auto";
+  const ready=()=>{st.disabled=!(heard&&count>0)};
+  vol.onclick=()=>{
+    vol.blur();sample.currentTime=0;
+    sample.play().then(()=>{volMsg.textContent="מתנגן…";vol.disabled=true})
+      .catch(()=>{volMsg.innerHTML='<span class="err">הקטע לא נטען. בדקו את החיבור ורעננו את הדף.</span>'});
+  };
+  sample.addEventListener("ended",()=>{heard=true;vol.disabled=false;vol.textContent="▶ להפעיל שוב";volMsg.textContent="אם השמע נוח וברור, אפשר להמשיך.";ready()});
+  const hit=()=>{count++;flash(pad);pc.textContent="נקלטו "+count+" לחיצות. מעולה.";ready()};
   bindPress(pad,hit);
-  st.onclick=()=>{unbindPress();next()};
+  st.onclick=()=>{sample.pause();unbindPress();next()};
 }
 
 let keyHandler=null;
