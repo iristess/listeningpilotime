@@ -86,9 +86,9 @@ th{color:var(--muted);font-weight:600;font-size:.85rem}
 <script>
 (function(){
 const STORIES=[
-  {id:"s90", file:"audio/story90.mp3", dur:95.32, label:"90 שניות", desc:"הסיפור על המחברת הירוקה שנשכחה באוטובוס"},
-  {id:"s150",file:"audio/story150.mp3",dur:136.12,label:"2.5 דקות", desc:"הסיפור על מי שנתקע במעלית"},
-  {id:"s255",file:"audio/story255.mp3",dur:256.29,label:"4.15 דקות", desc:"הסיפור על הצעדים הראשונים של הילדה"}
+  {id:"s90", file:"story90.mp3", dur:95.32, label:"90 שניות", desc:"הסיפור על המחברת הירוקה שנשכחה באוטובוס"},
+  {id:"s150",file:"story150.mp3",dur:136.12,label:"2.5 דקות", desc:"הסיפור על מי שנתקע במעלית"},
+  {id:"s255",file:"story255.mp3",dur:256.29,label:"4.15 דקות", desc:"הסיפור על הצעדים הראשונים של הילדה"}
 ];
 const BYID=Object.fromEntries(STORIES.map(s=>[s.id,s]));
 const PERMS=[["s90","s150","s255"],["s90","s255","s150"],["s150","s90","s255"],["s150","s255","s90"],["s255","s90","s150"],["s255","s150","s90"]];
@@ -252,7 +252,7 @@ function listen(i){
   bindPress(pad,()=>{if(!audio.paused&&!audio.ended){rec.presses.push(+audio.currentTime.toFixed(3));flash(pad)}});
   const start=()=>{
     audio.play().then(()=>{status.textContent="מקשיבים…";playBtn.hidden=true;rec.startedAt=new Date().toISOString()})
-      .catch(()=>{status.textContent="הדפדפן ביקש אישור להפעלת שמע.";playBtn.hidden=false});
+      .catch(err=>{if(audio.error||(err&&err.name==="NotSupportedError")){status.innerHTML='<span class="err">ההקלטה לא נטענה. בדקו את החיבור ורעננו את הדף.</span>';playBtn.hidden=true}else{status.textContent="לחצו על הכפתור כדי להפעיל את השמע.";playBtn.hidden=false}});
   };
   playBtn.onclick=()=>{playBtn.blur();start()};
   audio.addEventListener("error",()=>{status.innerHTML='<span class="err">ההקלטה לא נטענה. בדקו את החיבור ורעננו את הדף.</span>'});
